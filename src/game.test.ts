@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { isOnBoard, isSameTile, moveFirefighter, newGame } from './game'
+import { isOnBoard, isSameTile, moveFirefighter, newGame, putOutFire, type Tile } from './game'
+
+function gameWith(firefighter: Tile, fire: Tile, extinguishing = false) {
+  return { ...newGame(), firefighter, fire, extinguishing }
+}
+
+function tilesBetween(a: Tile, b: Tile): number {
+  return Math.abs(a.x - b.x) + Math.abs(a.y - b.y)
+}
 
 describe('newGame', () => {
   it('starts with an 8×6 Board and the Firefighter near the middle', () => {
@@ -8,6 +16,23 @@ describe('newGame', () => {
     expect(game.board).toEqual({ width: 8, height: 6 })
     expect(game.firefighter).toEqual({ x: 3, y: 2 })
   })
+
+  it.each([
+    [0, { x: 0, y: 0 }],
+    [0.999, { x: 7, y: 5 }],
+  ])('places the first Fire using the random source (%d)', (value, fire) => {
+    expect(newGame(() => value).fire).toEqual(fire)
+  })
+
+  it.each(Array.from({ length: 100 }, (_, i) => i / 100))(
+    'places the first Fire at least 3 Tiles from the Firefighter (random %d)',
+    (value) => {
+      const game = newGame(() => value)
+
+      expect(isOnBoard(game.board, game.fire)).toBe(true)
+      expect(tilesBetween(game.fire, game.firefighter)).toBeGreaterThanOrEqual(3)
+    },
+  )
 })
 
 describe('moveFirefighter', () => {
@@ -68,4 +93,70 @@ describe('isSameTile', () => {
   ])('is false for a different Tile %o', (tile) => {
     expect(isSameTile({ x: 3, y: 2 }, tile)).toBe(false)
   })
+})
+
+describe('moveFirefighter towards the Fire', () => {
+  it('never enters the Fire Tile', () => {
+    const game = gameWith({ x: 3, y: 2 }, { x: 4, y: 2 })
+
+    expect(moveFirefighter(game, 'right').firefighter).toEqual({ x: 3, y: 2 })
+  })
+
+  it.each([
+    ['right', { x: 5, y: 2 }],
+    ['left', { x: 1, y: 2 }],
+    ['up', { x: 3, y: 0 }],
+    ['down', { x: 3, y: 4 }],
+  ] as const)('starts Extinguishing when reaching the Fire by moving %s', (direction, fire) => {
+    const game = gameWith({ x: 3, y: 2 }, fire)
+
+    expect(moveFirefighter(game, direction).extinguishing).toBe(true)
+  })
+
+  it.each([
+    ['right', { x: 5, y: 3 }],
+    ['left', { x: 1, y: 1 }],
+    ['up', { x: 4, y: 0 }],
+    ['down', { x: 2, y: 4 }],
+  ] as const)(
+    'does not start Extinguishing when moving %s to a Tile diagonal to the Fire',
+    (direction, fire) => {
+      const game = gameWith({ x: 3, y: 2 }, fire)
+
+      expect(moveFirefighter(game, direction).extinguishing).toBe(false)
+    },
+  )
+})
+
+describe('moveFirefighter during Extinguishing', () => {
+  it.each(['up', 'down', 'left', 'right'] as const)('ignores moving %s', (direction) => {
+    const extinguishingGame = gameWith({ x: 3, y: 2 }, { x: 4, y: 2 }, true)
+
+    expect(moveFirefighter(extinguishingGame, direction)).toBe(extinguishingGame)
+  })
+})
+
+describe('putOutFire', () => {
+  const extinguishingGame = gameWith({ x: 0, y: 0 }, { x: 1, y: 0 }, true)
+
+  it('ends Extinguishing so the Firefighter can move again', () => {
+    const game = putOutFire(extinguishingGame, () => 0)
+
+    expect(game.extinguishing).toBe(false)
+    expect(moveFirefighter(game, 'down').firefighter).toEqual({ x: 0, y: 1 })
+  })
+
+  it('places a new Fire using the random source', () => {
+    expect(putOutFire(extinguishingGame, () => 0).fire).toEqual({ x: 3, y: 0 })
+  })
+
+  it.each(Array.from({ length: 100 }, (_, i) => i / 100))(
+    'places the new Fire at least 3 Tiles from the Firefighter (random %d)',
+    (value) => {
+      const game = putOutFire(extinguishingGame, () => value)
+
+      expect(isOnBoard(game.board, game.fire)).toBe(true)
+      expect(tilesBetween(game.fire, game.firefighter)).toBeGreaterThanOrEqual(3)
+    },
+  )
 })

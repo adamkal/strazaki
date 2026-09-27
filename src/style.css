@@ -30,4 +30,38 @@ body {
   border-radius: 12%;
   font-size: calc(var(--tile) * 0.75);
   line-height: 1;
+  position: relative;
+}
+
+.fire {
+  display: inline-block;
+}
+
+.extinguishing .fire {
+  animation: shrink var(--extinguishing-ms) ease-in forwards;
+}
+
+.extinguishing::after {
+  content: '💦';
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  animation: splash 0.3s ease-in-out infinite alternate;
+}
+
+@keyframes shrink {
+  to {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+
+@keyframes splash {
+  from {
+    transform: translateY(-15%) scale(0.8);
+  }
+  to {
+    transform: translateY(15%) scale(1.1);
+  }
 }
