@@ -1,0 +1,33 @@
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #cfe9c4;
+}
+
+body {
+  display: grid;
+  place-items: center;
+}
+
+#board {
+  --gap: 4px;
+  --tile: min(
+    calc((100vw - (var(--cols) - 1) * var(--gap)) / var(--cols)),
+    calc((100vh - (var(--rows) - 1) * var(--gap)) / var(--rows))
+  );
+  display: grid;
+  grid-template-columns: repeat(var(--cols), var(--tile));
+  grid-template-rows: repeat(var(--rows), var(--tile));
+  gap: var(--gap);
+}
+
+.tile {
+  display: grid;
+  place-items: center;
+  background: #9ccf8a;
+  border-radius: 12%;
+  font-size: calc(var(--tile) * 0.75);
+  line-height: 1;
+}
