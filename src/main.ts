@@ -9,7 +9,7 @@ const celebrationMs = { small: 1500, big: 4000 }
 const boardElement = document.querySelector<HTMLElement>('#board')!
 const tallyElement = document.querySelector<HTMLElement>('#tally')!
 const fireEngineElement = document.querySelector<HTMLElement>('#fire-engine')!
-const audio = createAudio(undefined, { hissMs: extinguishingMs, sirenMs: celebrationMs.big })
+const audio = createAudio({ extinguishingMs, bigCelebrationMs: celebrationMs.big })
 let game = newGame()
 boardElement.style.setProperty('--extinguishing-ms', `${extinguishingMs}ms`)
 fireEngineElement.style.setProperty('--big-celebration-ms', `${celebrationMs.big}ms`)
