@@ -5,13 +5,32 @@ export type Board = { width: number; height: number }
 export type Game = {
   board: Board
   firefighter: Tile
+  fire: Tile
+  extinguishing: boolean
 }
 
-export function newGame(): Game {
-  return {
-    board: { width: 8, height: 6 },
-    firefighter: { x: 3, y: 2 },
+export type Random = () => number
+
+const minFireDistance = 3
+
+export function newGame(random: Random = Math.random): Game {
+  const board = { width: 8, height: 6 }
+  const firefighter = { x: 3, y: 2 }
+  return { board, firefighter, fire: spawnFire(board, firefighter, random), extinguishing: false }
+}
+
+function distance(a: Tile, b: Tile): number {
+  return Math.abs(a.x - b.x) + Math.abs(a.y - b.y)
+}
+
+function spawnFire(board: Board, firefighter: Tile, random: Random): Tile {
+  const candidates: Tile[] = []
+  for (let y = 0; y < board.height; y++) {
+    for (let x = 0; x < board.width; x++) {
+      if (distance({ x, y }, firefighter) >= minFireDistance) candidates.push({ x, y })
+    }
   }
+  return candidates[Math.floor(random() * candidates.length)]
 }
 
 export function isOnBoard(board: Board, tile: Tile): boolean {
@@ -34,8 +53,17 @@ const steps: Record<Direction, Step> = {
 }
 
 export function moveFirefighter(game: Game, direction: Direction): Game {
+  if (game.extinguishing) return game
   const { dx, dy } = steps[direction]
   const tile = { x: game.firefighter.x + dx, y: game.firefighter.y + dy }
-  if (!isOnBoard(game.board, tile)) return game
-  return { ...game, firefighter: tile }
+  if (!isOnBoard(game.board, tile) || isSameTile(tile, game.fire)) return game
+  return { ...game, firefighter: tile, extinguishing: distance(tile, game.fire) === 1 }
+}
+
+export function putOutFire(game: Game, random: Random = Math.random): Game {
+  return {
+    ...game,
+    fire: spawnFire(game.board, game.firefighter, random),
+    extinguishing: false,
+  }
 }
