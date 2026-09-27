@@ -7,16 +7,28 @@ export type Game = {
   firefighter: Tile
   fire: Tile
   extinguishing: boolean
+  tally: number
+  celebration: Celebration | null
 }
+
+export type Celebration = 'small' | 'big'
 
 export type Random = () => number
 
 const minFireDistance = 3
+const fullTally = 10
 
 export function newGame(random: Random = Math.random): Game {
   const board = { width: 8, height: 6 }
   const firefighter = { x: 3, y: 2 }
-  return { board, firefighter, fire: spawnFire(board, firefighter, random), extinguishing: false }
+  return {
+    board,
+    firefighter,
+    fire: spawnFire(board, firefighter, random),
+    extinguishing: false,
+    tally: 0,
+    celebration: null,
+  }
 }
 
 function distance(a: Tile, b: Tile): number {
@@ -53,17 +65,28 @@ const steps: Record<Direction, Step> = {
 }
 
 export function moveFirefighter(game: Game, direction: Direction): Game {
-  if (game.extinguishing) return game
+  if (game.extinguishing || game.celebration) return game
   const { dx, dy } = steps[direction]
   const tile = { x: game.firefighter.x + dx, y: game.firefighter.y + dy }
   if (!isOnBoard(game.board, tile) || isSameTile(tile, game.fire)) return game
   return { ...game, firefighter: tile, extinguishing: distance(tile, game.fire) === 1 }
 }
 
-export function putOutFire(game: Game, random: Random = Math.random): Game {
+export function putOutFire(game: Game): Game {
+  const tally = game.tally + 1
+  return {
+    ...game,
+    extinguishing: false,
+    tally,
+    celebration: tally === fullTally ? 'big' : 'small',
+  }
+}
+
+export function endCelebration(game: Game, random: Random = Math.random): Game {
   return {
     ...game,
     fire: spawnFire(game.board, game.firefighter, random),
-    extinguishing: false,
+    tally: game.celebration === 'big' ? 0 : game.tally,
+    celebration: null,
   }
 }
