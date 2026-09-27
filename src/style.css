@@ -1,0 +1,29 @@
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #cfe9c4;
+}
+
+body {
+  display: grid;
+  place-items: center;
+}
+
+#board {
+  --tile: min(12vw, 15vh);
+  display: grid;
+  grid-template-columns: repeat(8, var(--tile));
+  grid-template-rows: repeat(6, var(--tile));
+  gap: 4px;
+}
+
+.tile {
+  display: grid;
+  place-items: center;
+  background: #9ccf8a;
+  border-radius: 12%;
+  font-size: calc(var(--tile) * 0.75);
+  line-height: 1;
+}
