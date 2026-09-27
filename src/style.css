@@ -7,15 +7,23 @@ body {
 }
 
 body {
+  --tally-height: 12vh;
   display: grid;
+  grid-template-rows: var(--tally-height) 1fr;
   place-items: center;
+}
+
+#tally {
+  font-size: calc(var(--tally-height) * 0.6);
+  line-height: 1;
+  white-space: nowrap;
 }
 
 #board {
   --gap: 4px;
   --tile: min(
     calc((100vw - (var(--cols) - 1) * var(--gap)) / var(--cols)),
-    calc((100vh - (var(--rows) - 1) * var(--gap)) / var(--rows))
+    calc((100vh - var(--tally-height) - (var(--rows) - 1) * var(--gap)) / var(--rows))
   );
   display: grid;
   grid-template-columns: repeat(var(--cols), var(--tile));
@@ -63,5 +71,45 @@ body {
   }
   to {
     transform: translateY(15%) scale(1.1);
+  }
+}
+
+.star {
+  position: absolute;
+  font-size: 40%;
+  animation: burst 1.5s ease-out forwards;
+}
+
+@keyframes burst {
+  from {
+    transform: rotate(var(--angle)) translateY(0) rotate(calc(-1 * var(--angle))) scale(0.3);
+    opacity: 1;
+  }
+  to {
+    transform: rotate(var(--angle)) translateY(calc(var(--tile) * -0.7)) rotate(calc(-1 * var(--angle))) scale(1.2);
+    opacity: 0;
+  }
+}
+
+#fire-engine {
+  position: fixed;
+  top: 40vh;
+  left: 0;
+  z-index: 1;
+  font-size: 25vh;
+  line-height: 1;
+  animation: drive var(--big-celebration-ms) linear forwards;
+}
+
+#fire-engine[hidden] {
+  display: none;
+}
+
+@keyframes drive {
+  from {
+    transform: translateX(-100%) scaleX(-1);
+  }
+  to {
+    transform: translateX(100vw) scaleX(-1);
   }
 }
