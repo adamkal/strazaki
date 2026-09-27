@@ -1,5 +1,7 @@
+import { createAudio } from './audio'
 import { endCelebration, isSameTile, moveFirefighter, newGame, putOutFire, type Game } from './game'
 import { directionForKey } from './keyboard'
+import { soundsFor } from './sounds'
 
 const extinguishingMs = 2000
 const celebrationMs = { small: 1500, big: 4000 }
@@ -7,6 +9,7 @@ const celebrationMs = { small: 1500, big: 4000 }
 const boardElement = document.querySelector<HTMLElement>('#board')!
 const tallyElement = document.querySelector<HTMLElement>('#tally')!
 const fireEngineElement = document.querySelector<HTMLElement>('#fire-engine')!
+const audio = createAudio(undefined, { hissMs: extinguishingMs, sirenMs: celebrationMs.big })
 let game = newGame()
 boardElement.style.setProperty('--extinguishing-ms', `${extinguishingMs}ms`)
 fireEngineElement.style.setProperty('--big-celebration-ms', `${celebrationMs.big}ms`)
@@ -47,11 +50,16 @@ function render(game: Game) {
   fireEngineElement.hidden = game.celebration !== 'big'
 }
 
+function update(next: Game) {
+  soundsFor(game, next).forEach(audio.play)
+  game = next
+  render(game)
+}
+
 function celebrate() {
   if (!game.celebration) return
   setTimeout(() => {
-    game = endCelebration(game)
-    render(game)
+    update(endCelebration(game))
   }, celebrationMs[game.celebration])
 }
 
@@ -59,14 +67,13 @@ window.addEventListener('keydown', (event) => {
   const direction = directionForKey(event.key)
   if (!direction) return
   event.preventDefault()
+  audio.unlock()
   const next = moveFirefighter(game, direction)
   if (next === game) return
-  game = next
-  render(game)
+  update(next)
   if (game.extinguishing) {
     setTimeout(() => {
-      game = putOutFire(game)
-      render(game)
+      update(putOutFire(game))
       celebrate()
     }, extinguishingMs)
   }
