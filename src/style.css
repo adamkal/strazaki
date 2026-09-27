@@ -12,11 +12,15 @@ body {
 }
 
 #board {
-  --tile: min(12vw, 15vh);
+  --gap: 4px;
+  --tile: min(
+    calc((100vw - (var(--cols) - 1) * var(--gap)) / var(--cols)),
+    calc((100vh - (var(--rows) - 1) * var(--gap)) / var(--rows))
+  );
   display: grid;
-  grid-template-columns: repeat(8, var(--tile));
-  grid-template-rows: repeat(6, var(--tile));
-  gap: 4px;
+  grid-template-columns: repeat(var(--cols), var(--tile));
+  grid-template-rows: repeat(var(--rows), var(--tile));
+  gap: var(--gap);
 }
 
 .tile {

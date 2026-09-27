@@ -1,7 +1,9 @@
 export type Tile = { x: number; y: number }
 
+export type Board = { width: number; height: number }
+
 export type Game = {
-  board: { width: number; height: number }
+  board: Board
   firefighter: Tile
 }
 
@@ -12,20 +14,28 @@ export function newGame(): Game {
   }
 }
 
+export function isOnBoard(board: Board, tile: Tile): boolean {
+  return tile.x >= 0 && tile.x < board.width && tile.y >= 0 && tile.y < board.height
+}
+
+export function isSameTile(a: Tile, b: Tile): boolean {
+  return a.x === b.x && a.y === b.y
+}
+
 export type Direction = 'up' | 'down' | 'left' | 'right'
 
-const steps: Record<Direction, Tile> = {
-  up: { x: 0, y: -1 },
-  down: { x: 0, y: 1 },
-  left: { x: -1, y: 0 },
-  right: { x: 1, y: 0 },
+type Step = { dx: number; dy: number }
+
+const steps: Record<Direction, Step> = {
+  up: { dx: 0, dy: -1 },
+  down: { dx: 0, dy: 1 },
+  left: { dx: -1, dy: 0 },
+  right: { dx: 1, dy: 0 },
 }
 
 export function moveFirefighter(game: Game, direction: Direction): Game {
-  const step = steps[direction]
-  const x = game.firefighter.x + step.x
-  const y = game.firefighter.y + step.y
-  const onBoard = x >= 0 && x < game.board.width && y >= 0 && y < game.board.height
-  if (!onBoard) return game
-  return { ...game, firefighter: { x, y } }
+  const { dx, dy } = steps[direction]
+  const tile = { x: game.firefighter.x + dx, y: game.firefighter.y + dy }
+  if (!isOnBoard(game.board, tile)) return game
+  return { ...game, firefighter: tile }
 }
