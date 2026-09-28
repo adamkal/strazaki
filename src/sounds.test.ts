@@ -1,10 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { endCelebration, moveFirefighter, newGame, putOutFire, type Game, type Tile } from './game'
+import { endCelebration, moveFirefighter, putOutFire } from './game'
 import { soundsFor } from './sounds'
-
-function gameWith(firefighter: Tile, fire: Tile, tally = 0): Game {
-  return { ...newGame(), firefighter, fire, tally }
-}
+import { gameWith } from './test-helpers'
 
 describe('soundsFor', () => {
   it('plays a step blip when the Firefighter moves', () => {
@@ -29,19 +26,19 @@ describe('soundsFor', () => {
   })
 
   it('plays a chime when a Celebration starts', () => {
-    const before = { ...gameWith({ x: 4, y: 2 }, { x: 5, y: 2 }), extinguishing: true }
+    const before = gameWith({ x: 4, y: 2 }, { x: 5, y: 2 }, { extinguishing: true })
 
     expect(soundsFor(before, putOutFire(before))).toEqual(['chime'])
   })
 
   it('plays the siren when the Big Celebration starts', () => {
-    const before = { ...gameWith({ x: 4, y: 2 }, { x: 5, y: 2 }, 9), extinguishing: true }
+    const before = gameWith({ x: 4, y: 2 }, { x: 5, y: 2 }, { extinguishing: true, tally: 9 })
 
     expect(soundsFor(before, putOutFire(before))).toEqual(['siren'])
   })
 
   it('plays nothing when a Celebration ends', () => {
-    const before = putOutFire({ ...gameWith({ x: 4, y: 2 }, { x: 5, y: 2 }), extinguishing: true })
+    const before = putOutFire(gameWith({ x: 4, y: 2 }, { x: 5, y: 2 }, { extinguishing: true }))
 
     expect(soundsFor(before, endCelebration(before))).toEqual([])
   })
