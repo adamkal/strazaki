@@ -8,10 +8,7 @@ import {
   putOutFire,
   type Tile,
 } from './game'
-
-function gameWith(firefighter: Tile, fire: Tile, extinguishing = false) {
-  return { ...newGame(), firefighter, fire, extinguishing }
-}
+import { gameWith } from './test-helpers'
 
 function tilesBetween(a: Tile, b: Tile): number {
   return Math.abs(a.x - b.x) + Math.abs(a.y - b.y)
@@ -138,14 +135,14 @@ describe('moveFirefighter towards the Fire', () => {
 
 describe('moveFirefighter during Extinguishing', () => {
   it.each(['up', 'down', 'left', 'right'] as const)('ignores moving %s', (direction) => {
-    const extinguishingGame = gameWith({ x: 3, y: 2 }, { x: 4, y: 2 }, true)
+    const extinguishingGame = gameWith({ x: 3, y: 2 }, { x: 4, y: 2 }, { extinguishing: true })
 
     expect(moveFirefighter(extinguishingGame, direction)).toBe(extinguishingGame)
   })
 })
 
 describe('putOutFire', () => {
-  const extinguishingGame = gameWith({ x: 0, y: 0 }, { x: 1, y: 0 }, true)
+  const extinguishingGame = gameWith({ x: 0, y: 0 }, { x: 1, y: 0 }, { extinguishing: true })
 
   it('ends Extinguishing', () => {
     expect(putOutFire(extinguishingGame).extinguishing).toBe(false)
@@ -153,7 +150,7 @@ describe('putOutFire', () => {
 })
 
 describe('endCelebration', () => {
-  const celebratingGame = putOutFire(gameWith({ x: 0, y: 0 }, { x: 1, y: 0 }, true))
+  const celebratingGame = putOutFire(gameWith({ x: 0, y: 0 }, { x: 1, y: 0 }, { extinguishing: true }))
 
   it('ends the Celebration so the Firefighter can move again', () => {
     const game = endCelebration(celebratingGame, () => 0)
@@ -195,14 +192,14 @@ describe('Tally', () => {
   })
 
   it('gains one icon for each extinguished Fire', () => {
-    const game = putOutFire({ ...gameWith({ x: 0, y: 0 }, { x: 1, y: 0 }, true), tally: 3 })
+    const game = putOutFire(gameWith({ x: 0, y: 0 }, { x: 1, y: 0 }, { extinguishing: true, tally: 3 }))
 
     expect(game.tally).toBe(4)
   })
 })
 
 describe('Celebration', () => {
-  const extinguishingGame = gameWith({ x: 0, y: 0 }, { x: 1, y: 0 }, true)
+  const extinguishingGame = gameWith({ x: 0, y: 0 }, { x: 1, y: 0 }, { extinguishing: true })
 
   it('is not happening at the start', () => {
     expect(newGame().celebration).toBeNull()
@@ -231,7 +228,7 @@ describe('moveFirefighter during a Celebration', () => {
     ['big', 'down'],
     ['big', 'left'],
   ] as const)('ignores moving during a %s Celebration (%s)', (celebration, direction) => {
-    const celebratingGame = { ...gameWith({ x: 3, y: 2 }, { x: 6, y: 5 }), celebration }
+    const celebratingGame = gameWith({ x: 3, y: 2 }, { x: 6, y: 5 }, { celebration })
 
     expect(moveFirefighter(celebratingGame, direction)).toBe(celebratingGame)
   })
